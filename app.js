@@ -13,6 +13,8 @@ var app = express();
 var user_routes = require('./routes/user.route')
 var product_routes = require('./routes/product.route')
 var carrito_routes = require('./routes/carrito.route')
+var categoria_routes = require('./routes/categoria.route')
+
 // var answer_routes = require('./routes/answer.route')
 
 
@@ -37,8 +39,8 @@ app.use((req, res, next) => {
 app.use('/api', user_routes);
 app.use('/api', product_routes);
 app.use('/api', carrito_routes);
-// app.use('/api', answer_routes);
-
+app.use('/api', categoria_routes
+);
 
 
 

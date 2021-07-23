@@ -9,11 +9,11 @@ var md_auth = require('../middlewares/authenticate');
 
 
 //rutas de products api
-router.post('/products', md_auth.authenticated, ProductController.save);
+router.post('/products', ProductController.save);
 router.get('/products/:page?',  ProductController.getProducts);
 router.get('/product/:id',  ProductController.getProduct);
-router.put('/product/:id', md_auth.authenticated, ProductController.updateProduct);
-router.delete('/product/:id', md_auth.authenticated, ProductController.deleteProduct);
+router.put('/product/:id', ProductController.updateProduct);
+router.delete('/product/:id', ProductController.deleteProduct);
 router.get('/search/:search', ProductController.search);
 
 
