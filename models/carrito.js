@@ -9,7 +9,10 @@ var Schema = mongoose.Schema;
 
 var CarritoSchema = Schema({
     user: { type: Schema.ObjectId, ref: 'User' },
-    products: [{ type: Schema.ObjectId, ref: 'Product' }],
+    products: { type: Schema.ObjectId, ref: 'Product' },
+    cantidad: { type: String},
+    entregado: { type: Boolean},
+
     // order: String
  
 });

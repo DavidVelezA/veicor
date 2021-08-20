@@ -312,8 +312,83 @@ var controller = {
 
 
 
-    }
+    },
 
+    uploadImg: function(req, res) {
+
+        // configurar modulo multiparty routes/user.controller.js
+        // recoger el fichero de la peticion 
+        var file_name = 'Imagen no subida';
+
+        if (!req.files) {
+            return res.status(404).send({
+                status: 'error',
+                message: file_name,
+
+            });
+        }
+
+        //conseguir el nombre y la extension del archivo subido
+        var file_path = req.files.file0.path;
+        // se separa la ruta por segmentos
+        var file_split = file_path.split('\\');
+        //  para mac linux var file_split = file_path.split('/');
+
+        var file_name = file_split[2];
+
+        // sacar extension del archivo
+        var ext_split = file_name.split('\.');
+        var file_ext = ext_split[1];
+
+        // comprobar extension (solo imagenes) si no es imagen eliminarlo
+        if (file_ext != 'png' &&
+            file_ext != 'jpg' &&
+            file_ext != 'jpeg' &&
+            file_ext != 'gif') {
+            fs.unlink(file_path, (err) => {
+
+                return res.status(200).send({
+                    status: 'error',
+                    message: 'la extension del archivo no es valida'
+    
+                });
+
+            });
+
+        } else {
+                // devolver respuesta
+                return res.status(200).send({
+                    status: 'success',
+                    file: file_name
+                }); 
+           
+                              
+
+        }
+    },
+
+    getImage: function(req, res) {
+
+        var fileName = req.params.fileName;
+        var pathFile = './uploads/products/' + fileName
+
+        // comprobar si existe el fichero
+
+        fs.exists(pathFile, (exists) => {
+            if (exists) {
+                return res.sendFile(path.resolve(pathFile));
+            } else {
+                return res.status(404).send({
+                    message: 'la imagen no existe'
+
+                });
+
+            }
+
+        });
+
+
+    },
 
 };
 

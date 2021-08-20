@@ -5,6 +5,8 @@ var ProductController = require('../controllers/product.controller');
 
 var router = express.Router();
 var md_auth = require('../middlewares/authenticate');
+var multipart = require('connect-multiparty');
+var md_upload = multipart({ uploadDir: './uploads/products' });
 
 
 
@@ -15,7 +17,8 @@ router.get('/product/:id',  ProductController.getProduct);
 router.put('/product/:id', ProductController.updateProduct);
 router.delete('/product/:id', ProductController.deleteProduct);
 router.get('/search/:search', ProductController.search);
-
+router.post('/upload-img', [md_upload], ProductController.uploadImg);
+router.get('/img/:fileName', ProductController.getImage);
 
 
 

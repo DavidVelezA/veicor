@@ -15,106 +15,55 @@ var controller = {
 
         try {
             //validar datos
-            var validate_user = !validator.isEmpty(req.user.sub);
             var validate_product = !validator.isEmpty(params.product);
+            var validate_cantidad = !validator.isEmpty(params.cantidad);
 
         } catch (err) {
             return res.status(200).send({
-                message: "Faltan datos por enviar"
+                message: "Faltan datos por enviar"+err
             });
 
         }
-        if (validate_user && validate_product) {
+        if (validate_product && validate_cantidad) {
+
+            //crear objeto de carrito
+
+            var carrito = new Carrito()
+
+            // asignar valores al product
+            carrito.user = req.user.sub;
+            carrito.products = params.product;
+            carrito.cantidad = params.cantidad;
+            carrito.entregado = false;
+    
+
+            // carrito.order = params.order;
 
 
-            Carrito.find({
-                user: req.user.sub
-            }).exec((err, carro) => {
+            // guardar carrito
+            carrito.save((err, carritoStored) => {
                 if (err) {
                     return res.status(500).send({
                         status: 'error',
-                        message: 'Error al hacer la consulta'
-
+                        message: "Error al guardar "
                     });
 
                 }
 
-                if (carro.length == 0) {
-
-
-                    //crear objeto de carrito
-
-                    var carrito = new Carrito();
-
-                    // asignar valores al product
-                    carrito.user = req.user.sub;
-                    carrito.products = params.product;
-                    // carrito.order = params.order;
-
-
-                    // guardar carrito
-                    carrito.save((err, carritoStored) => {
-                        if (err) {
-                            return res.status(500).send({
-                                status: 'error',
-                                message: "Error al guardar "
-                            });
-
-                        }
-                    
-                        if (!carritoStored) {
-                            return res.status(500).send({
-                                status: 'error',
-                                message: "El product no se ha guardado"
-                            });
-
-                        }
-                        // devolver respuesta
-
-
-                        return res.status(200).send({ status: 'success', carritoStored });
-                    }); // close save
-
-                } else {
-         
-                    var update = {
-                        products: [...carro[0].products, params.product],
-
-                    };
-                                     
-
-                    // find and update del topic por id y por id de usuario
-
-                    Carrito.findOneAndUpdate({ user: req.user.sub }, update, { new: true }, (err, carroUpdate) => {
-
-                        if (err) {
-
-                            return res.status(500).send({
-                                status: 'error',
-                                message: 'error en la peticion'
-
-                            });
-
-                        }
-                        if (!carroUpdate) {
-                            return res.status(404).send({
-                                status: 'error',
-                                message: 'No se ha atualizado el carro'
-
-                            });
-
-
-                        }
-                        // devolver respuesta
-                        return res.status(200).send({
-                            status: 'successs',
-                            carroUpdate
-
-                        });
+                if (!carritoStored) {
+                    return res.status(500).send({
+                        status: 'error',
+                        message: "El product no se ha guardado"
                     });
-                }
 
-            });
+                }
+                // devolver respuesta
+
+
+                return res.status(200).send({ status: 'success', carritoStored });
+            }); // close save
+
+
 
         } else {
             return res.status(200).send({
@@ -129,7 +78,8 @@ var controller = {
 
         // find 
         Carrito.find({
-            user: req.user.sub
+            user: req.user.sub,
+            entregado: false
         }).populate('products').exec((err, carrito) => {
             if (err) {
                 return res.status(500).send({
@@ -140,7 +90,7 @@ var controller = {
 
             }
             if (carrito.length == 0) {
-           
+
                 return res.status(404).send({
                     status: 'notfound',
                     message: 'No hay products que mostrar'
@@ -156,74 +106,144 @@ var controller = {
 
             });
         });
-    },     
+    },
 
     deleteItemCarrito: function (req, res) {
-            // sacar el id del topic y del comment de la url
-            // var topicId = req.params.topicId;
-            var itemId = req.params.itemId;
+            //sacar el id del topic de la url
+            var carritoId = req.params.itemId;
     
-            //buscar el topic
-            Carrito.find({user: req.user.sub}).exec((err, carrito) => {
+            // find and delete por topicId y por userId
+            Carrito.findOneAndDelete({ _id: carritoId }, (err, productRemoved) => {
     
-                // Topic.findById(topicId, (err, topic) => {
                 if (err) {
                     return res.status(500).send({
                         status: 'error',
                         message: 'error en la peticion'
-                    });
     
+                    });
                 }
-                if (!carrito) {
+                if (!productRemoved) {
                     return res.status(404).send({
                         status: 'error',
-                        message: 'No existe el carrito'
+                        message: 'No se ha eliminado el product'
                     });
-                } else {
-    
-                    //seleccionar el subdocumento (comentario)
-
-                    const items = carrito[0].products.filter(function(carro) {
-                        return carro != itemId; 
-                    });   
-                    
-                    const update = {
-                        products: items
-                    }
-     
-                    // borrar el comentario
-                    Carrito.findOneAndUpdate({ user: req.user.sub }, update, { new: true }, (err, carroUpdate) => {
-
-                        if (err) {
-
-                            return res.status(500).send({
-                                status: 'error',
-                                message: 'error en la peticion'
-
-                            });
-
-                        }
-                        if (!carroUpdate) {
-                            return res.status(404).send({
-                                status: 'error',
-                                message: 'No se ha atualizado el carro'
-
-                            });
-
-
-                        }
-                        // devolver respuesta
-                        return res.status(200).send({
-                            status: 'successs',
-                            carroUpdate
-
-                        });
-                    });
-        
                 }
     
-            });    
+                // devolver respuesta
+    
+                return res.status(200).send({
+                    status: 'successs',
+                    productRemoved
+    
+                });
+            });
+    
     },
+
+    getCarritos: function (req, res) {
+
+        // find 
+        Carrito.find({
+            // entregado: false
+        }).populate('products').populate('user').exec((err, carrito) => {
+            if (err) {
+                return res.status(500).send({
+                    status: 'error',
+                    message: 'Error al hacer la consulta'
+
+                });
+
+            }
+            if (carrito.length == 0) {
+
+                return res.status(404).send({
+                    status: 'notfound',
+                    message: 'No hay products que mostrar'
+
+                });
+
+            }
+            // devolver resultado 
+
+            return res.status(200).send({
+                status: 'success',
+                carrito
+
+            });
+        });
+    },
+
+    getCarritoAdmin: function (req, res) {
+        var user = req.params.user;
+
+        // find 
+        Carrito.find({
+            user: user,
+            entregado: false
+        }).populate('products').exec((err, carrito) => {
+            if (err) {
+                return res.status(500).send({
+                    status: 'error',
+                    message: 'Error al hacer la consulta'
+
+                });
+
+            }
+            if (carrito.length == 0) {
+
+                return res.status(404).send({
+                    status: 'notfound',
+                    message: 'No hay products que mostrar'
+
+                });
+
+            }
+            // devolver resultado 
+
+            return res.status(200).send({
+                status: 'success',
+                carrito
+
+            });
+        });
+    },
+
+    cambiarEstado: function (req, res) {
+        var user = req.params.user;
+
+        // find 
+        Carrito.findOne({
+            _id: user,
+        }).populate('products').exec((err, carrito) => {
+            if (err) {
+                return res.status(500).send({
+                    status: 'error',
+                    message: 'Error al hacer la consulta'
+
+                });
+
+            }
+            if (carrito.length == 0) {
+
+                return res.status(404).send({
+                    status: 'notfound',
+                    message: 'No hay products que mostrar'
+
+                });
+
+            }
+            carrito.entregado = true;
+            carrito.save();
+            // devolver resultado 
+
+            return res.status(200).send({
+                status: 'success',
+                carrito
+
+            });
+        });
+    },
+
 
 
 };
