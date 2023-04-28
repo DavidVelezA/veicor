@@ -9,10 +9,13 @@ mongoose.set("useFindAndModify", false);
 mongoose.set("useUnifiedTopology", true);
 mongoose.Promise = global.Promise;
 mongoose
-  .connect("mongodb+srv://veicor:veicor@cluster0.isugy7m.mongodb.net/veicor", {
-    useNewUrlParser: true,
-    useCreateIndex: true,
-  })
+  .connect(
+    "mongodb+srv://Anthony:ECUADOR@cluster0.gwpjz.mongodb.net/db-veicor",
+    {
+      useNewUrlParser: true,
+      useCreateIndex: true,
+    }
+  )
   // mongoose.connect('mongodb://localhost:27017/api_rest_node', { useNewUrlParser: true })
   .then(() => {
     console.log("conexion a MongoDB correcta");
